@@ -10,3 +10,5 @@ Here are the files. I have 4 videos and am having a hardware failure for the vid
 so it will no longer capture the screen and make videos. I have 3 done and hash table no 
 video and may need a new computer or a repair. I will load the .py files and3 videos to 
 canvas and if I can get an alternative computer timely make the last video. Mike
+
+Initiating a pull request to revew items in master.
