@@ -361,9 +361,9 @@ def hash_table_demo():
     print("Let's do a get value using <H.get_value(99)> for a key that does not exist: ", H.get_value(99))    
     print("Let's see if key 99 is in dictionary/HashTable H using <H.key_in_dict(99): ", H.key_in_dict(99))
     
-    print("\nLet's do a get value using [ ] access method <H[55]> for a key that does exist: ", H[55])
-    print("Let's do a get value using <H.get(55)> for a key that does exist: ", H.get_value(55))    
-    print("Let's see if key 55 is in dictionary/HashTable H using <H.key_in_dict(55): ", H.key_in_dict(55))
+    print("\nLet's do a get value using [ ] access method <H[35]> for a key that does exist: ", H[35])
+    print("Let's do a get value using <H.get(35)> for a key that does exist: ", H.get_value(35))    
+    print("Let's see if key 35 is in dictionary/HashTable H using <H.key_in_dict(35): ", H.key_in_dict(35))
 
     print("\nHashTable H keys are:   \n", H.get_all_keys())
     print("HashTable H values are: \n", H.get_all_values())
