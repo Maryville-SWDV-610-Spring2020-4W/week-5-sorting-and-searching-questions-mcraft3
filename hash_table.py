@@ -119,6 +119,8 @@ returns an empty HashTable collection.
 put(key,val) Add a new key-value pair to the
 HashTable. If the key is already in the HashTable
 then replace the old value with the new value.
+Put includes a check for need to auto resize
+the HashTable. If needed calls resize.
 
 __setitem__ Calls put(key, data). Enables
 H[key]=data with data = value for key.
@@ -139,27 +141,28 @@ the HashTable that may be filled or empty (None).
 len_of_entries() Return the number of key:value
 pairs that are in the HashTable. 
 
-delete_key_value_pair(key) Delete the key-value pair
-from the HashTable using a statement of the form
-del HashTable[key]. Returns True if deleted and
-False if the Key did not exist.
+delete_key_value_pair(key) Delete the key-value
+pair from the HashTable using a statement of the
+form del HashTable[key]. Returns True if deleted
+and False if the Key did not exist.
 
-key_in_dict(key) Return True for a statement of the
-form key in HashTable, if the given key is in
+key_in_dict(key) Return True for a statement of
+the form key in HashTable, if the given key is in
 the HashTable, False otherwise.
 
-_hash_function() Hashes the key using key%size
-with size being len_of_table.
+_hash_function(key) Hashes the key using
+key%self.size with size being len_of_table.
 
-_rehash() Rehashes the hash_function using linear
-probing using +1 for collision resolution.
+_rehash(oldhash) Rehashes the hash_function using
+linear probing using (oldhash+1)%self.size for
+collision resolution.
 
-_resize() Resizes the HashTable and the underlying
-list for keys (slots) and list for values (data).
-Uses loading factor of if entries > size//2 then
-temp copy old table, make table 2x -1, reload with
-new hash.
-"""
+_resize(new_size) Resizes the HashTable and the
+underlying list for keys (slots) and list for
+values (data). Put method calls resize and uses
+loading factor of if entries > size//2 then temp
+copy old table, make table 2x -1, then reload old
+keys and values with new hash."""
 
 class HashTable:
     # -----------HashTable Constructor------------    
@@ -178,7 +181,7 @@ class HashTable:
     # ---------HashTable Public Accessors--------
     def get_value(self,key):
         # computes initial hash value
-        startSlot = self._hash_function(key,len(self.slots))
+        startSlot = self._hash_function(key)
         data = None                               # initialize
         stop = False                              # initialize
         found = False                             # initialize
@@ -188,7 +191,7 @@ class HashTable:
                 found = True                      # set to True
                 data = self.data[position]        # set position value to data to return it
             else:                                 # not in this index/slot, rehash to linear probe next slot(s)
-                position=self._rehash(position,len(self.slots))
+                position=self._rehash(position)
                 if position == startSlot:         # end of list
                     stop = True                   # set to True. Stop look.
         return data                               # return value from position. If None returns None.
@@ -210,7 +213,7 @@ class HashTable:
 
     def key_in_dict(self,key):                    # returns boolean True / False on if a key is in the HashTable
         # computes initial hash value.
-        startSlot = self._hash_function(key,len(self.slots))
+        startSlot = self._hash_function(key)
         stop = False                              # Initialize
         found = False                             # Initialize
         position = startSlot                      # Set position (cursor/tracker) from hash function
@@ -218,26 +221,27 @@ class HashTable:
             if self.slots[position] == key:       # found index/slot with key in it
                 found = True                      # set to True
             else:                                 # not in this index/slot, rehash to linear probe next slot(s)
-                position=self._rehash(position,len(self.slots))
+                position=self._rehash(position)
                 if position == startSlot:         # end of list
                     stop = True                   # set to True. Stop look.
         return found                              # returns found True if found, otherwise returns found is False.
 
     # -----------HashTable Methods----------------    
-    def _hash_function(self,key,size):            # implements simple remainder method
-        return key%size     # sample if key = 77 and size = 11, 77 % 11 = 0 (7 remainder 0) hash to 0
-                            # sample if key = 44 and size = 11, 44 % 11 = 0 (4 remainder 0) 0 full, so rehash +1
-                            # since slot 0 is filled with 77, it rehashes to oldHash + 1 = 0 + 1 = 1  hash to 1
+    def _hash_function(self,key):                 # implements simple remainder method
+        return key%self.size           # sample if key = 77 and size = 11, 77 % 11 = 0 (7 remainder 0) hash to 0
+                                       # sample if key = 44 and size = 11, 44 % 11 = 0 (4 remainder 0) 0 full, so rehash +1
+                                       # since slot 0 is filled with 77, it rehashes to oldHash + 1 = 0 + 1 = 1  hash to 1
 
-    def _rehash(self,oldHash,size):               # collision resolution technique is 
-        return (oldHash+1)%size                   # linear probing with a plus 1 rehash
-
+    def _rehash(self,oldHash):                    # collision resolution technique is 
+        return (oldHash+1)%self.size              # linear probing with a plus 1 rehash
+        
     def put(self,key,data):                       # Adds a new key: value pair; if key exists updates value     
-        # computes initial hash value
-        startSlot = self._hash_function(key,len(self.slots))
         if self.entries > self.size // 2:         # keep load factor <= 0.5
             new_size = (2 * self.size) - 1        # number 2x - 1 is often prime
             self._resize(new_size)                # calls method to resize using new size
+
+        # computes initial hash value
+        startSlot = self._hash_function(key)
         
         if self.slots[startSlot] == None:         # if no key add to this slot
             self.slots[startSlot] = key           # set key to this index / slot
@@ -247,9 +251,9 @@ class HashTable:
             self.data[startSlot] = data           # replace
         else:
             # if slot not empty, iterates rehash until you find an empty slot
-            nextSlot = self._rehash(startSlot,len(self.slots))
+            nextSlot = self._rehash(startSlot)
             while self.slots[nextSlot] != None and self.slots[nextSlot] != key:
-                nextSlot = self._rehash(nextSlot,len(self.slots))
+                nextSlot = self._rehash(nextSlot)
             if self.slots[nextSlot] == None:      # found an empty slot
                 self.slots[nextSlot]=key          # set key to this index / slot
                 self.data[nextSlot]=data          # set value to this index / slot
@@ -265,7 +269,7 @@ class HashTable:
         
     def delete_key_value_pair(self,key):
         # computes initial hash value.
-        startSlot = self._hash_function(key,len(self.slots))
+        startSlot = self._hash_function(key)
         stop = False                              # Initialize
         found = False                             # Initialize
         position = startSlot                      # set position (cursor/tracker) from hash function
@@ -277,7 +281,7 @@ class HashTable:
                 stop = True                       # return True, pair deleted.
                 self.entries -= 1    
             else:                                 # not in this index/slot, rehash to linear probe next slot(s)
-                position=self._rehash(position,len(self.slots))
+                position=self._rehash(position)
                 if position == startSlot:         # end of list
                     stop = True                   # set to True. Stop look.
                     return found                  # return found is False, failed pair delete. Did not exist.
@@ -302,9 +306,11 @@ class HashTable:
 def hash(aList, listsize):                        # standalone function to demo the hash function
     sum = 0                                       # Initialize
     for pos in range(len(aList)):                 # iterate list to hash
-        #sum = sum + ord(aList[pos])              # unweighted; anagrams will hash same
-        sum = sum + ord(aList[pos])*(pos+1)       # weighted for each pos to hash anagrams
-
+        if aList[pos] != None:                    # only sum actual values, if None skip
+            #sum = sum + ord(aList[pos])          # unweighted; anagrams will hash same
+            sum = sum + ord(aList[pos])*(pos+1)   # weighted for each pos to hash anagrams
+        
+        
     return sum%listsize  # calculate Hash cat:   312%11 = 4 unweighted,  641%11 =  3 weighted 
                          # calculate Hash apple: 530%11 = 2 unweighted, 1594%11 = 10 weighted
                          # calculate Hash paelp: 530%11 = 2 unweighted, 1601%11 =  6 weighted
@@ -333,14 +339,14 @@ def hash_table_demo():
 
     print("\nNote: During this next .put of 5 items, the table will automatically resize to 21.\n")
 
-    print('Load key: value using square bracket [] method <H[77]="bird">.    Hash=77%21= 14.')        
+    print('Load key: value using square bracket [] method <H[77]="bird">.    Hash=77%11=0. Resize 77%21= 14.')        
     H[77]="bird"
-    print('Load key: value using square bracket [] method <H[31]="cow">.     Hash=31%21= 10.')        
-    H[31]="cow"
+    print('Load key: value using square bracket [] method <H[32]="cow">.     Has=32%11=10. Resize=32%21= 11.')        
+    H[32]="cow"
     print('Load key: value using square bracket [] method <H[2]="goat">.     Hash=2%21= 2.')            
     H[2]="goat"
-    print('Load key: value using square bracket [] method <H[55]="pig">.     Hash=55%21= 13.')                
-    H[55]="pig"
+    print('Load key: value using square bracket [] method <H[35]="pig">.     Hash=35%21= 14. Rehash to 15.')                
+    H[35]="pig"
     print('Load key: value using square bracket [] method <H[20]="chicken">. Hash=20%21= 20.')                
     H[20]="chicken"
     print("HashTable H keys are:   \n", H.get_all_keys())
@@ -371,9 +377,9 @@ def hash_table_demo():
 
 # ------------------------------------------------           
 def main():
-    aList = ['c', 'a', 't']
-    bList = ['a', 'p', 'p', 'l', 'e']
-    cList = ['p', 'a', 'e', 'l', 'p'] 
+    aList = ['c', 'a', 't', None, None, None, None, None, None, None, None]
+    bList = ['a', 'p', 'p', 'l', 'e', None, None, None, None, None, None]
+    cList = ['p', 'a', 'e', 'l', 'p', None, None, None, None, None, None] 
     print("Simple Hash Function Demonstration\n")
     print("Simple Hash Function: ", aList, hash(aList, 11))
     print("Simple Hash Function: ", bList, hash(bList, 11))    
