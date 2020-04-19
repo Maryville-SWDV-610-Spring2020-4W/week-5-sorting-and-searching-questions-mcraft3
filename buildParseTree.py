@@ -104,20 +104,6 @@ box."""
    organization and out put of the program.
 """
 # ------------------------------------------------
-"""When you have completed this assignment and
-pushed your work to the remote GitHub repository,
-answer the following question(s):
-
-1. How many hours do you estimate you used
-   completing this assignment?
-
-2. What was easiest for you when completing
-   this assignment?
-
-3. What was the most difficult challenge you
-   experienced when completing this assignment?
-"""
-# ------------------------------------------------
 # Required to run the Parse Tree, both Stack
 # and BinaryTree.
 from doublyLinkedStack import Stack
@@ -148,8 +134,8 @@ def buildParseTree(fpexp):
         There are four different kinds of tokens
         to consider: left parentheses, right
         parentheses, operators, and operands.
-        Left ( create new tree, Right ) we have
-        finished expression. Operands = leaf nodes
+        If a '(' create new tree, if a ')' we have
+        finished an expression. Operands = leaf nodes
         and children of their operators. Operators
         have both L and R child."""
         
@@ -208,7 +194,8 @@ def expressionConverter():
     have spaces between every character.""")
 
     # starting expression with no spaces
-    myExpressionNoSpaces = "((15+10)*6)"
+    myExpressionNoSpaces = "((5+10)*3)"
+    #myExpressionNoSpaces = "(15+(10*3))"
 
     print("\nExpression with no spaces:", myExpressionNoSpaces)
     print()
@@ -221,40 +208,40 @@ def expressionConverter():
 
     # loop through unspacced string
     for i in range(len(myExpressionNoSpacesString)):
-        
+        # case 1
         if myExpressionNoSpacesString[i] == '(': 
             # concatenate empty spaced string
             # with index from unspaced string
             # and with a space " "
             # loop to complete entire string
             myExpressionStringSpaced = myExpressionStringSpaced + myExpressionNoSpacesString[i] + " "
-        
+        # case 2
         elif myExpressionNoSpacesString[i] in ['+', '-', '*', '/']:
             h = i - 1
             
             if myExpressionNoSpacesString[h] == ")":
                 myExpressionStringSpaced = myExpressionStringSpaced + myExpressionNoSpacesString[i] + " "
             
-            elif myExpressionNoSpacesString[h] not in ['+', '-', '*', '/']:
+            elif myExpressionNoSpacesString[h] not in ['+', '-', '*', '/']: # its a number 0-9
                 myExpressionStringSpaced = myExpressionStringSpaced + " " + myExpressionNoSpacesString[i] + " "
                 
             else:
                 myExpressionStringSpaced = myExpressionStringSpaced + myExpressionNoSpacesString[i] + " "
-        
-        elif myExpressionNoSpacesString[i] not in ['+', '-', '*', '/', ')']:
+        # case 3
+        elif myExpressionNoSpacesString[i] not in ['+', '-', '*', '/', ')']: # its a number 0-9
             
             try:
                 myExpressionStringSpaced = myExpressionStringSpaced + myExpressionNoSpacesString[i]
             except ValueError:
                 raise ValueError("token '{}' is not a valid integer".format(i))    
-        
+        # case 4
         elif myExpressionNoSpacesString[i] == ')':        
             h = i - 1
             
             if myExpressionNoSpacesString[h] == ")":
                 myExpressionStringSpaced = myExpressionStringSpaced + myExpressionNoSpacesString[i] + " "
             
-            elif myExpressionNoSpacesString[h] not in ['+', '-', '*', '/']:
+            elif myExpressionNoSpacesString[h] not in ['+', '-', '*', '/']: # its number 0-9  
                 myExpressionStringSpaced = myExpressionStringSpaced + " " + myExpressionNoSpacesString[i] + " "
                 
             else:
@@ -268,19 +255,22 @@ def expressionConverter():
 def main():
     myExpressionStringSpaced = expressionConverter()
     
+    print("Expression after conversion and now spaced:", myExpressionStringSpaced)
+    print("\nCreating Parse Tree with MyExpressionStringSpaced as a parameter.")
     # Create an empty tree.
     pt = buildParseTree(myExpressionStringSpaced)
     #pt = buildParseTree("( ( 10 + 5 ) * 3 )")
     
-    print("Post Order Traversal:")
+    print("\nPost Order Traversal:")
     pt.postorder()  # post order traversal to print ints and operators
     
     #print("\nEvaluation of Expression in Parse Tree is: ", evaluate(pt))
     print("\nEvaluation of Expression in Parse Tree is: ", pt.postordereval())
 
     # print converted expression
-    print("\nExpression after conversion and now spaced:", myExpressionStringSpaced)
-    print()
+    print("\nExpression extracted from Parse Tree (and reassembled with parenthesis)")
+    print("using printexp method of binaryTree: " ,end=" ")
+    pt.printexp()
 
 main()
     
