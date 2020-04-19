@@ -1,3 +1,5 @@
+Clean up to provide a more robust demonstration. Significant changes: final print output was a call to expression converter and I replaced that with a call to print expression by extracting  the data out of the parse tree and printing each element along with parens and spaces. Added a rodeo expression for demo in the video and cleaned up some commenting. supports a better and timely review of the binary tree file with focus on post order traversal, post order evaluation, and print expression (inorder). Updated video completed and will be provided to canvas. v/r Mike
+
 # week-5-sorting-and-searching-questions-mcraft3
 week-5-sorting-and-searching-questions-mcraft3 created by GitHub Classroom
 
